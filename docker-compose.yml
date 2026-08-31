@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: escuela-juridica-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: escuela_juridica
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - escuela_juridica_db_data:/var/lib/postgresql/data
+
+volumes:
+  escuela_juridica_db_data:
