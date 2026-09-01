@@ -1,9 +1,12 @@
 spring:
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-
+  datasource:
+    url: jdbc:postgresql://159.198.40.207:5432/aulavirtual_pg
+    username: aulavirtual_pguser
+    password: "LaUztdNfEI3FZFMT4gpol/rblMOEJN+7"
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
 logging:
   level:
     pe.edu.utp.escuela.app: DEBUG

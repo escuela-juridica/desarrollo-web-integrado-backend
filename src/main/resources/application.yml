@@ -2,24 +2,65 @@ spring:
   application:
     name: escuela-juridica-api
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:dev}
-  datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/escuela_juridica}
-    username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:postgres}
+    active: dev
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: ${DB_DDL_AUTO:validate}
+      ddl-auto: validate
     properties:
       hibernate:
+        default_schema: esejur
         format_sql: true
+        jdbc:
+          time_zone: UTC
+  jackson:
+    time-zone: America/Lima
+  mail:
+    host: mail.aulavirtual.escuelajuridica.edu.pe
+    port: 465
+    username: notificaciones@aulavirtual.escuelajuridica.edu.pe
+    password: "TW5#!klJwXeNFBV4"
+    default-encoding: UTF-8
+    test-connection: false
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+          socketFactory:
+            port: 465
+            class: javax.net.ssl.SSLSocketFactory
+          connectiontimeout: 10000
+          timeout: 10000
+          writetimeout: 10000
 
 server:
-  port: ${SERVER_PORT:8080}
+  port: 8080
+  forward-headers-strategy: framework
+  error:
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
 
 springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+application:
+  time-zone: America/Lima
+
+cors:
+  allowed-origin: http://localhost:4200
+
+security:
+  jwt:
+    issuer: esejur-api
+    secret: esejur-clave-entornos-no-productivos-2026
+    expiration-minutes: 60
+  cookie:
+    name: ESEJUR_SESION
+    secure: false
+    same-site: Lax

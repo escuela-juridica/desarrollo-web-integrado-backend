@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Correo de prueba ESEJUR</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f6f8;font-family:Arial,sans-serif;color:#101828;">
+  <div style="display:none;max-height:0;overflow:hidden;color:transparent;">
+    Confirmación de funcionamiento del servicio de correo ESEJUR.
+  </div>
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+         style="width:100%;background:#f4f6f8;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="600" cellspacing="0" cellpadding="0"
+               style="width:100%;max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e4e7ec;">
+          <tr>
+            <td style="padding:24px 32px;background:#103860;border-bottom:5px solid #d62828;">
+              <div style="font-size:22px;font-weight:700;color:#ffffff;">Escuela Jurídica</div>
+              <div style="margin-top:4px;font-size:13px;color:#d9e8f5;">Aula Virtual ESEJUR</div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px;">
+              <h1 style="margin:0 0 16px;font-size:24px;line-height:32px;color:#103860;">
+                Hola, {{name}}
+              </h1>
+              <p style="margin:0 0 20px;font-size:16px;line-height:25px;color:#344054;">
+                {{message}}
+              </p>
+              <div style="padding:16px;border-radius:8px;background:#f0f9ff;border-left:4px solid #00a6a6;">
+                <p style="margin:0;font-size:14px;line-height:22px;color:#344054;">
+                  El servicio SMTP y el procesamiento de plantillas HTML funcionan correctamente.
+                </p>
+              </div>
+              <p style="margin:24px 0 0;font-size:13px;line-height:20px;color:#667085;">
+                Enviado el {{sentAt}}.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:20px 32px;background:#f9fafb;border-top:1px solid #e4e7ec;">
+              <p style="margin:0;font-size:12px;line-height:18px;color:#667085;">
+                © {{year}} Escuela Jurídica. Este es un correo automático de prueba.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
