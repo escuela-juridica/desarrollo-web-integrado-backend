@@ -30,5 +30,5 @@ Thumbs.db
 
 ### Entorno / secretos ###
 .env
-application-local.yml
+application-local.properties
 *.log
