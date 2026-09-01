@@ -4,7 +4,6 @@
 -- Los correos, telefonos, contenido academico y matriculas son simulados.
 
 BEGIN;
-SET search_path TO esejur, public;
 
 -- Datos maestros del negocio.
 INSERT INTO tipo_curso (codigo, nombre, orden) VALUES
