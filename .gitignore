@@ -30,5 +30,4 @@ Thumbs.db
 
 ### Entorno / secretos ###
 .env
-application-local.properties
 *.log
