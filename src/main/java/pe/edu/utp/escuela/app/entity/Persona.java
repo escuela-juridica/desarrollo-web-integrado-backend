@@ -15,7 +15,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "persona")
-public class Persona {
+public class Persona extends RegistroAuditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,6 +31,12 @@ public class Persona {
     @Column(name = "apellido_materno", length = 80)
     private String apellidoMaterno;
 
+    @Column(length = 30)
+    private String telefono;
+
+    @Column(name = "documento_identidad", length = 30, unique = true)
+    private String documentoIdentidad;
+
     @Column(name = "foto_url", columnDefinition = "text")
     private String fotoUrl;
 
@@ -38,7 +44,7 @@ public class Persona {
     private String cargoProfesional;
 
     @Column(nullable = false)
-    private boolean activo;
+    private boolean activo = true;
 
     public String nombreCompleto() {
         StringBuilder completo = new StringBuilder(nombres).append(' ').append(apellidoPaterno);
