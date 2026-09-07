@@ -6,13 +6,17 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import pe.edu.utp.escuela.app.dto.CursoTarjetaRespuesta;
+import pe.edu.utp.escuela.app.dto.FichaCursoRespuesta;
 import pe.edu.utp.escuela.app.dto.FiltrosCursoRespuesta;
 import pe.edu.utp.escuela.app.dto.PageResponse;
+import pe.edu.utp.escuela.app.dto.VistaPreviaRespuesta;
 import pe.edu.utp.escuela.app.service.CatalogoServicio;
+import pe.edu.utp.escuela.app.service.FichaCursoServicio;
 
 @Tag(
         name = "Catálogo público",
@@ -24,6 +28,7 @@ import pe.edu.utp.escuela.app.service.CatalogoServicio;
 public class CatalogoControlador {
 
     private final CatalogoServicio catalogoServicio;
+    private final FichaCursoServicio fichaCursoServicio;
 
     @Operation(
             summary = "Listar cursos del catálogo",
@@ -60,5 +65,36 @@ public class CatalogoControlador {
     @GetMapping("/filtros")
     public FiltrosCursoRespuesta filtros() {
         return catalogoServicio.filtros();
+    }
+
+    @Operation(
+            summary = "Consultar la ficha pública de un curso",
+            description = "Devuelve los datos comerciales, docentes y temario seguro de un curso "
+                    + "publicado según su URL amigable. No expone enlaces de reunión ni materiales "
+                    + "protegidos; esos solo se entregan a través del endpoint de vista previa.")
+    @ApiResponse(responseCode = "200", description = "Ficha del curso")
+    @ApiResponse(responseCode = "404",
+            description = "No existe un curso publicado con esa URL amigable")
+    @GetMapping("/{urlAmigable}")
+    public FichaCursoRespuesta obtener(
+            @Parameter(description = "URL amigable única del curso", example = "registral")
+            @PathVariable String urlAmigable) {
+        return fichaCursoServicio.obtener(urlAmigable);
+    }
+
+    @Operation(
+            summary = "Abrir la vista previa de una lección",
+            description = "Entrega los materiales de una lección solo cuando está marcada como "
+                    + "vista previa pública. Vuelve a comprobar curso, lección y bandera en cada "
+                    + "solicitud; una lección no pública responde con 404 sin filtrar información.")
+    @ApiResponse(responseCode = "200", description = "Materiales autorizados de la lección")
+    @ApiResponse(responseCode = "404", description = "Lección no encontrada o no es vista previa")
+    @GetMapping("/{urlAmigable}/lecciones/{leccionId}/vista-previa")
+    public VistaPreviaRespuesta vistaPrevia(
+            @Parameter(description = "URL amigable única del curso", example = "registral")
+            @PathVariable String urlAmigable,
+            @Parameter(description = "Identificador de la lección", example = "1")
+            @PathVariable Long leccionId) {
+        return fichaCursoServicio.obtenerVistaPrevia(urlAmigable, leccionId);
     }
 }
