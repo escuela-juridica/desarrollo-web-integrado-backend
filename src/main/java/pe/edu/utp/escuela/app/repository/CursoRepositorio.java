@@ -1,8 +1,10 @@
 package pe.edu.utp.escuela.app.repository;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,6 +12,16 @@ import pe.edu.utp.escuela.app.dto.CursoTarjetaFila;
 import pe.edu.utp.escuela.app.entity.Curso;
 
 public interface CursoRepositorio extends JpaRepository<Curso, Long> {
+
+    @EntityGraph(attributePaths = {
+            "tipoCurso", "categoriaTematica", "entidadCertificadora", "estadoCurso"
+    })
+    @Query("""
+            select c from Curso c join c.estadoCurso e
+            where c.urlAmigable = :slug and c.publicadoEn is not null
+              and e.codigo not in ('BORRADOR', 'CANCELADO')
+            """)
+    Optional<Curso> buscarFichaPublica(@Param("slug") String slug);
 
     @Query(value = """
             select new pe.edu.utp.escuela.app.dto.CursoTarjetaFila(

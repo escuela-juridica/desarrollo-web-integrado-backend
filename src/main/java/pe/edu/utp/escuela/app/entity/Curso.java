@@ -15,6 +15,8 @@ import java.time.LocalDate;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Getter
 @Setter
@@ -47,6 +49,10 @@ public class Curso {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_tematica_id")
     private CategoriaTematica categoriaTematica;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "entidad_certificadora_id")
+    private EntidadCertificadora entidadCertificadora;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "estado_curso_id", nullable = false)
@@ -87,6 +93,10 @@ public class Curso {
 
     @Column(name = "horas_academicas", precision = 8, scale = 2)
     private BigDecimal horasAcademicas;
+
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    @Column(name = "beneficios", nullable = false)
+    private String[] beneficios = new String[0];
 
     @Column(name = "publicado_en")
     private Instant publicadoEn;

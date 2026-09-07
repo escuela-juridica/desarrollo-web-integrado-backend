@@ -43,6 +43,9 @@ public class Persona extends RegistroAuditable {
     @Column(name = "cargo_profesional", length = 180)
     private String cargoProfesional;
 
+    @Column(name = "biografia_profesional", columnDefinition = "text")
+    private String biografiaProfesional;
+
     @Column(nullable = false)
     private boolean activo = true;
 
