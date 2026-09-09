@@ -96,6 +96,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/health",
                                 "/api/publico/**",
+                                "/api/auth/login",
                                 "/api/auth/acceso",
                                 "/api/auth/acceso/google",
                                 "/api/auth/registro/**",
