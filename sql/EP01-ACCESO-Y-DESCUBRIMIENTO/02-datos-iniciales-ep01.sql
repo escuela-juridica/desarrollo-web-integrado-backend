@@ -68,7 +68,7 @@ INSERT INTO persona (
 SELECT v.nombres, v.apellido_paterno, v.apellido_materno, v.telefono,
        NULL, v.foto_url, v.cargo_profesional, v.biografia_profesional
 FROM (VALUES
-    ('Administrador', 'General', 'Esejur', '999 100 101', NULL, NULL, NULL),
+    ('Administrador', 'General', NULL, '999 100 101', NULL, NULL, NULL),
     ('Gabriel Antonio', 'Mayanga', 'Cabrera', '999 100 102', NULL, NULL, NULL),
     ('Joel Anthony', 'Saldaña', 'Chávez', '999 100 103', NULL, NULL, NULL),
     ('Juan José', 'Morales', 'Velasquez', '999 100 104', NULL, NULL, NULL),
@@ -96,7 +96,7 @@ INSERT INTO usuario (
 SELECT p.persona_id, v.correo, v.origen_registro, true, v.hash,
        v.google_subject, false, CURRENT_TIMESTAMP
 FROM (VALUES
-    ('Administrador', 'General', 'Esejur', 'admin@escuelajuridica.edu.pe',
+    ('Administrador', 'General', NULL, 'admin@escuelajuridica.edu.pe',
      'ADMINISTRATIVO', '{bcrypt}$2a$10$3q2hYuey7bsCOddOq/6JXeyITlKtm51hBOPZ8XodNvK.AbLF7ntZC', NULL),
     ('Gabriel Antonio', 'Mayanga', 'Cabrera', 'gabriel.mayanga@demo.esejur.pe',
      'GOOGLE', '{bcrypt}$2a$10$41ZIgbSSlPVd3pBrI3BGuu9O6s0NXg.XnZZ2svvawPxfzrHU5Aj3G',
@@ -109,7 +109,7 @@ FROM (VALUES
         origen_registro, hash, google_subject)
 JOIN persona p ON p.nombres = v.nombres
  AND p.apellido_paterno = v.apellido_paterno
- AND p.apellido_materno = v.apellido_materno
+ AND p.apellido_materno IS NOT DISTINCT FROM v.apellido_materno
 ON CONFLICT (correo) DO UPDATE SET
 persona_id = EXCLUDED.persona_id, origen_registro = EXCLUDED.origen_registro,
 activo = true, contrasena_hash = EXCLUDED.contrasena_hash,
