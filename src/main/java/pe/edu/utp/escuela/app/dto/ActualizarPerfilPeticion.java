@@ -1,0 +1,12 @@
+package pe.edu.utp.escuela.app.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+public record ActualizarPerfilPeticion(
+    @NotBlank @Size(max = 120) String nombres,
+    @NotBlank @Size(max = 80) String apellidoPaterno,
+    @Size(max = 80) String apellidoMaterno,
+    @Size(max = 30) String telefono,
+    @Size(max = 30) String documentoIdentidad
+) {}
