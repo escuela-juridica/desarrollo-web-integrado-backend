@@ -22,6 +22,7 @@ public class RegistroPersistencia {
     private final UsuarioRolRepositorio asignaciones;
     private final PasswordEncoder encoder;
     private final CodigoVerificacionServicio codigos;
+    private final ReferenciaVerificacionServicio referencias;
     private final SesionRegistroServicio sesiones;
     private final TextNormalizer textos;
     private final Clock clock;
@@ -47,7 +48,7 @@ public class RegistroPersistencia {
         asignarRol(usuario, rol);
         boolean enviado = codigos.emitirPara(usuario);
         return new RegistroRespuesta(usuario.getId(), correo, enviado,
-                usuario.getId().toString());
+                referencias.emitir(usuario.getId()));
     }
 
     @Transactional
