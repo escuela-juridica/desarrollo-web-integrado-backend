@@ -6,9 +6,11 @@ import java.util.Arrays;
 import java.util.List;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -30,6 +32,7 @@ import tools.jackson.databind.json.JsonMapper;
 public class SecurityConfig {
 
     @Bean
+    @Primary
     SecretKey jwtSecretKey(@Value("${security.jwt.secret}") String secret) {
         byte[] bytes = secret.getBytes(StandardCharsets.UTF_8);
         if (bytes.length < 32) {
@@ -39,15 +42,51 @@ public class SecurityConfig {
     }
 
     @Bean
+    @Primary
     JwtEncoder jwtEncoder(SecretKey jwtSecretKey) {
         return NimbusJwtEncoder.withSecretKey(jwtSecretKey).build();
     }
 
     @Bean
+    @Primary
     JwtDecoder jwtDecoder(
             SecretKey jwtSecretKey,
             @Value("${security.jwt.issuer}") String issuer) {
         NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(jwtSecretKey)
+                .macAlgorithm(MacAlgorithm.HS256)
+                .build();
+        decoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(issuer));
+        return decoder;
+    }
+
+    /**
+     * Clave y JWT independientes de la sesión, exclusivos de la referencia de verificación de
+     * correo (PF-005). Nunca deben compartir clave con la sesión: si la compartieran, esa
+     * referencia (entregada apenas te registras, antes de confirmar nada) podría decodificarse
+     * como si fuera una cookie de sesión válida.
+     */
+    @Bean
+    @Qualifier("verificacionJwt")
+    SecretKey verificacionJwtSecretKey(@Value("${security.jwt.verificacion-secret}") String secret) {
+        byte[] bytes = secret.getBytes(StandardCharsets.UTF_8);
+        if (bytes.length < 32) {
+            throw new IllegalStateException("security.jwt.verificacion-secret debe contener al menos 32 bytes");
+        }
+        return new SecretKeySpec(bytes, "HmacSHA256");
+    }
+
+    @Bean
+    @Qualifier("verificacionJwt")
+    JwtEncoder verificacionJwtEncoder(@Qualifier("verificacionJwt") SecretKey verificacionJwtSecretKey) {
+        return NimbusJwtEncoder.withSecretKey(verificacionJwtSecretKey).build();
+    }
+
+    @Bean
+    @Qualifier("verificacionJwt")
+    JwtDecoder verificacionJwtDecoder(
+            @Qualifier("verificacionJwt") SecretKey verificacionJwtSecretKey,
+            @Value("${security.jwt.issuer}") String issuer) {
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(verificacionJwtSecretKey)
                 .macAlgorithm(MacAlgorithm.HS256)
                 .build();
         decoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(issuer));

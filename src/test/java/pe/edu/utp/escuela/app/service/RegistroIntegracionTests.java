@@ -59,7 +59,7 @@ class RegistroIntegracionTests {
         RegistroRespuesta r = servicio.registrar(peticion("LUCIA@example.com"));
         assertEquals("lucia@example.com", r.correo());
         assertTrue(r.envioAceptado());
-        assertEquals(r.usuarioId().toString(), r.referenciaVerificacion());
+        assertNotEquals(r.usuarioId().toString(), r.referenciaVerificacion());
         assertThrows(RuntimeException.class, () -> sesionDecoder.decode(r.referenciaVerificacion()));
         var usuario = usuarios.findById(r.usuarioId()).orElseThrow();
         assertNull(usuario.getCorreoVerificadoEn());
