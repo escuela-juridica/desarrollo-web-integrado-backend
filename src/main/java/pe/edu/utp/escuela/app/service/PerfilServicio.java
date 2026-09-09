@@ -5,12 +5,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.edu.utp.escuela.app.dto.ActualizarPerfilPeticion;
+import pe.edu.utp.escuela.app.dto.CambiarContrasenaPeticion;
 import pe.edu.utp.escuela.app.dto.NuevaContrasenaPeticion;
 import pe.edu.utp.escuela.app.dto.PerfilRespuesta;
 import pe.edu.utp.escuela.app.entity.Persona;
 import pe.edu.utp.escuela.app.entity.Usuario;
 import pe.edu.utp.escuela.app.exception.BusinessValidationException;
 import pe.edu.utp.escuela.app.exception.DuplicateResourceException;
+import pe.edu.utp.escuela.app.exception.InvalidCurrentPasswordException;
 import pe.edu.utp.escuela.app.exception.OperationNotAllowedException;
 import pe.edu.utp.escuela.app.exception.UnauthorizedException;
 import pe.edu.utp.escuela.app.repository.PersonaRepositorio;
@@ -67,6 +69,26 @@ public class PerfilServicio {
         }
         passwordPolicyService.validate(entrada.contrasena());
         usuario.setContrasenaHash(passwordEncoder.encode(entrada.contrasena()));
+    }
+
+    /** Para cuentas que ya tienen contraseña propia (con o sin vínculo Google): exige la actual
+     * para confirmar identidad antes de reemplazarla. No es el mismo recorrido que HU-004
+     * (recuperación por correo, para cuando no la recuerdas). */
+    @Transactional
+    public void cambiarContrasena(CambiarContrasenaPeticion entrada) {
+        Usuario usuario = usuarioActual();
+        if (usuario.getContrasenaHash() == null) {
+            throw new OperationNotAllowedException(
+                    "La cuenta todavía no tiene una contraseña propia que cambiar");
+        }
+        if (!passwordEncoder.matches(entrada.contrasenaActual(), usuario.getContrasenaHash())) {
+            throw new InvalidCurrentPasswordException();
+        }
+        if (!entrada.contrasenaNueva().equals(entrada.confirmacion())) {
+            throw new BusinessValidationException("Las contraseñas no coinciden");
+        }
+        passwordPolicyService.validate(entrada.contrasenaNueva());
+        usuario.setContrasenaHash(passwordEncoder.encode(entrada.contrasenaNueva()));
     }
 
     private Usuario usuarioActual() {

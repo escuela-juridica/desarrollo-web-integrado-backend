@@ -18,12 +18,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import pe.edu.utp.escuela.app.dto.ActualizarPerfilPeticion;
+import pe.edu.utp.escuela.app.dto.CambiarContrasenaPeticion;
 import pe.edu.utp.escuela.app.dto.NuevaContrasenaPeticion;
 import pe.edu.utp.escuela.app.dto.PerfilRespuesta;
 import pe.edu.utp.escuela.app.entity.Persona;
 import pe.edu.utp.escuela.app.entity.Usuario;
 import pe.edu.utp.escuela.app.exception.BusinessValidationException;
 import pe.edu.utp.escuela.app.exception.DuplicateResourceException;
+import pe.edu.utp.escuela.app.exception.InvalidCurrentPasswordException;
 import pe.edu.utp.escuela.app.exception.OperationNotAllowedException;
 import pe.edu.utp.escuela.app.exception.UnauthorizedException;
 import pe.edu.utp.escuela.app.repository.PersonaRepositorio;
@@ -185,5 +187,47 @@ class PerfilServicioTests {
 
         assertThrows(BusinessValidationException.class,
                 () -> servicio.crearContrasena(new NuevaContrasenaPeticion("Clave123", "Otra123")));
+    }
+
+    @Test
+    void cambiarContrasenaConActualCorrectaLaReemplaza() {
+        Usuario usuario = usuarioConPersona(1L, 10L, null, "hash-viejo");
+        mockUsuarioActual(1L, usuario);
+        when(encoder.matches("ActualClave1", "hash-viejo")).thenReturn(true);
+        when(encoder.encode("NuevaClave1")).thenReturn("hash-nuevo");
+
+        servicio.cambiarContrasena(
+                new CambiarContrasenaPeticion("ActualClave1", "NuevaClave1", "NuevaClave1"));
+
+        assertEquals("hash-nuevo", usuario.getContrasenaHash());
+    }
+
+    @Test
+    void cambiarContrasenaConActualIncorrectaLanzaCredencialInvalida() {
+        Usuario usuario = usuarioConPersona(1L, 10L, null, "hash-viejo");
+        mockUsuarioActual(1L, usuario);
+        when(encoder.matches("Mala", "hash-viejo")).thenReturn(false);
+
+        assertThrows(InvalidCurrentPasswordException.class, () -> servicio.cambiarContrasena(
+                new CambiarContrasenaPeticion("Mala", "NuevaClave1", "NuevaClave1")));
+    }
+
+    @Test
+    void cambiarContrasenaSinContrasenaPreviaLanzaOperacionNoPermitida() {
+        Usuario usuario = usuarioConPersona(1L, 10L, "google-sub", null);
+        mockUsuarioActual(1L, usuario);
+
+        assertThrows(OperationNotAllowedException.class, () -> servicio.cambiarContrasena(
+                new CambiarContrasenaPeticion("Cualquiera1", "NuevaClave1", "NuevaClave1")));
+    }
+
+    @Test
+    void cambiarContrasenaConConfirmacionDistintaLanzaValidacion() {
+        Usuario usuario = usuarioConPersona(1L, 10L, null, "hash-viejo");
+        mockUsuarioActual(1L, usuario);
+        when(encoder.matches("ActualClave1", "hash-viejo")).thenReturn(true);
+
+        assertThrows(BusinessValidationException.class, () -> servicio.cambiarContrasena(
+                new CambiarContrasenaPeticion("ActualClave1", "NuevaClave1", "OtraClave1")));
     }
 }

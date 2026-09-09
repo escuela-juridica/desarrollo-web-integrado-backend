@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pe.edu.utp.escuela.app.dto.ActualizarPerfilPeticion;
+import pe.edu.utp.escuela.app.dto.CambiarContrasenaPeticion;
 import pe.edu.utp.escuela.app.dto.NuevaContrasenaPeticion;
 import pe.edu.utp.escuela.app.dto.PerfilRespuesta;
 import pe.edu.utp.escuela.app.service.PerfilServicio;
@@ -51,6 +52,18 @@ public class PerfilControlador {
     @ApiResponse(responseCode = "409", description = "La cuenta no puede crear una contraseña por este medio")
     public ResponseEntity<Void> crearContrasena(@Valid @RequestBody NuevaContrasenaPeticion p) {
         servicio.crearContrasena(p);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PutMapping("/contrasena/cambio")
+    @Operation(summary = "Cambiar mi contraseña actual",
+            description = "Para cuentas que ya tienen contraseña propia: exige la contraseña "
+                    + "actual antes de reemplazarla por una nueva.")
+    @ApiResponse(responseCode = "204", description = "Contraseña actualizada")
+    @ApiResponse(responseCode = "400", description = "Contraseña actual incorrecta, nueva contraseña inválida o no coincide")
+    @ApiResponse(responseCode = "409", description = "La cuenta todavía no tiene una contraseña propia")
+    public ResponseEntity<Void> cambiarContrasena(@Valid @RequestBody CambiarContrasenaPeticion p) {
+        servicio.cambiarContrasena(p);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
