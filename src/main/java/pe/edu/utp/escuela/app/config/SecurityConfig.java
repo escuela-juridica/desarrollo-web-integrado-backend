@@ -24,12 +24,36 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.cors.CorsConfigurationSource;
 import pe.edu.utp.escuela.app.dto.ApiErrorResponse;
 import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
 public class SecurityConfig {
+
+    /** Rutas sin sesión, compartidas entre el {@code authorizeHttpRequests} de abajo y el
+     * {@code sessionCookieBearerTokenResolver}: si no se comparten, una cookie de sesión vieja o
+     * mal firmada (p. ej. tras rotar {@code security.jwt.secret}) tumba con 401 hasta las rutas
+     * públicas, porque Spring intenta validar cualquier token presente ANTES de mirar si la ruta
+     * lo exige. Por eso el resolver ignora la cookie por completo en estas rutas. */
+    private static final String[] RUTAS_PUBLICAS = {
+            "/api/health",
+            "/api/publico/**",
+            "/api/auth/acceso",
+            "/api/auth/acceso/google",
+            "/api/auth/registro/**",
+            "/api/auth/verificacion/**",
+            "/api/auth/recuperacion/**",
+            "/api/testing/mail",
+            // Temporal (Épica 01, ver pe.edu.utp.escuela.app.adminusuarios): CRUD básico sin
+            // base de datos, deliberadamente separado del sistema de sesión/roles real. Se
+            // elimina en la Épica 02.
+            "/api/admin/usuarios/**",
+            "/v3/api-docs/**",
+            "/swagger-ui.html",
+            "/swagger-ui/**",
+    };
 
     @Bean
     @Primary
@@ -96,13 +120,19 @@ public class SecurityConfig {
     @Bean
     BearerTokenResolver sessionCookieBearerTokenResolver(
             @Value("${security.cookie.name}") String cookieName) {
-        return request -> request.getCookies() == null
-                ? null
-                : Arrays.stream(request.getCookies())
-                        .filter(cookie -> cookieName.equals(cookie.getName()))
-                        .map(cookie -> cookie.getValue())
-                        .findFirst()
-                        .orElse(null);
+        AntPathMatcher matcher = new AntPathMatcher();
+        return request -> {
+            String ruta = request.getServletPath();
+            boolean esPublica = Arrays.stream(RUTAS_PUBLICAS).anyMatch(patron -> matcher.match(patron, ruta));
+            if (esPublica || request.getCookies() == null) {
+                return null;
+            }
+            return Arrays.stream(request.getCookies())
+                    .filter(cookie -> cookieName.equals(cookie.getName()))
+                    .map(cookie -> cookie.getValue())
+                    .findFirst()
+                    .orElse(null);
+        };
     }
 
     @Bean
@@ -132,22 +162,7 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(
-                                "/api/health",
-                                "/api/publico/**",
-                                "/api/auth/acceso",
-                                "/api/auth/acceso/google",
-                                "/api/auth/registro/**",
-                                "/api/auth/verificacion/**",
-                                "/api/auth/recuperacion/**",
-                                "/api/testing/mail",
-                                // Temporal (Épica 01, ver pe.edu.utp.escuela.app.adminusuarios):
-                                // CRUD básico sin base de datos, deliberadamente separado del
-                                // sistema de sesión/roles real. Se elimina en la Épica 02.
-                                "/api/admin/usuarios/**",
-                                "/v3/api-docs/**",
-                                "/swagger-ui.html",
-                                "/swagger-ui/**")
+                        .requestMatchers(RUTAS_PUBLICAS)
                         .permitAll()
                         .requestMatchers("/api/auth/sesion", "/api/auth/cierre")
                         .authenticated()
